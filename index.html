@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTPL મશીન ટ્રેનીંગ વિડીઓ </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .search-box {
+            padding: 12px 20px;
+            width: 70%;
+            max-width: 500px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box:focus {
+            border-color: #4a00e0;
+            box-shadow: 0 0 0 3px rgba(74, 0, 224, 0.2);
+        }
+        
+        .video-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .video-id {
+            font-size: 0.9rem;
+            color: #666;
+            background-color: #f1f3f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #666;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        @media (max-width: 768px) {
+            .video-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OTPL TRANING VIDEOS </h1>
+            <p class="subtitle">GSRTC જામનગર ડીવીજન </p>
+        </header>
+        
+        <div class="controls">
+            <input type="text" class="search-box" placeholder="वीडियो खोजें..." id="searchInput">
+        </div>
+        
+        <div class="video-gallery" id="videoGallery">
+            <div class="loading">वीडियो लोड हो रहे हैं...</div>
+        </div>
+        
+        <footer>
+            <p>© 2025 वीडियो गैलरी | EDP CELL JAMNAGAR </p>
+        </footer>
+    </div>
+
+    <script>
+        // Google Sheets से डेटा फ़ेच करने का फ़ंक्शन
+        async function fetchDataFromGoogleSheets() {
+            // यहाँ आपको अपने Google Sheets का URL डालना होगा
+            // उदाहरण: https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:json
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/1o0lsarLhnJJW46wJEj-XIOlcD6qzvAwhKVoPoPsAX3I/edit?usp=sharing';
+            
+            try {
+                const response = await fetch(sheetUrl);
+                const text = await response.text();
+                // JSON पार्स करें (Google Sheets JSONP रिस्पॉन्स को हैंडल करना)
+                const json = JSON.parse(text.substring(47).slice(0, -2));
+                
+                // डेटा प्रोसेस करें
+                const rows = json.table.rows;
+                const videos = [];
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    const id = row.c[0]?.v || '';
+                    const label = row.c[1]?.v || '';
+                    const videoFile = row.c[2]?.v || '';
+                    
+                    if (id && label && videoFile) {
+                        videos.push({ id, label, videoFile });
+                    }
+                }
+                
+                return videos;
+            } catch (error) {
+                console.error('डेटा लोड करने में त्रुटि:', error);
+                return [];
+            }
+        }
+        
+        // वीडियो गैलरी डिस्प्ले करने का फ़ंक्शन
+        function displayVideos(videos) {
+            const gallery = document.getElementById('videoGallery');
+            
+            if (videos.length === 0) {
+                gallery.innerHTML = '<div class="no-results">कोई वीडियो नहीं मिला</div>';
+                return;
+            }
+            
+            gallery.innerHTML = '';
+            
+            videos.forEach(video => {
+                // Google Drive लिंक से एम्बेड URL बनाएं
+                let embedUrl = video.videoFile;
+                if (embedUrl.includes('drive.google.com/file/d/')) {
+                    const fileId = embedUrl.match(/\/d\/([^\/]+)/)[1];
+                    embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                }
+                
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.innerHTML = `
+                    <div class="video-container">
+                        <iframe src="${embedUrl}" allow="autoplay" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.label}</div>
+                        <div class="video-id">ID: ${video.id}</div>
+                    </div>
+                `;
+                
+                gallery.appendChild(videoCard);
+            });
+        }
+        
+        // खोज फ़ंक्शन
+        function setupSearch(videos) {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                if (searchTerm === '') {
+                    displayVideos(videos);
+                    return;
+                }
+                
+                const filteredVideos = videos.filter(video => 
+                    video.label.toLowerCase().includes(searchTerm) || 
+                    video.id.toLowerCase().includes(searchTerm)
+                );
+                
+                displayVideos(filteredVideos);
+            });
+        }
+        
+        // पेज लोड होने पर डेटा लोड करें
+        document.addEventListener('DOMContentLoaded', async function() {
+            // डेमो डेटा - असली इम्प्लीमेंटेशन में fetchDataFromGoogleSheets() का उपयोग करें
+            const demoVideos = [
+                {
+                    id: "VID001",
+                    label: "OTPL મશીન માં રૂટ શિલેક્ટ કરવા માટે",
+                    videoFile: "https://drive.google.com/file/d/1fx9WC6uUM6rYfchtE7UKmLvY7uNmTkEr/view?usp=sharing"
+                },
+                {
+                    id: "VID002",
+                    label: "OTPL મશીન માંથી ટિકિટ કાઢવા માટે",
+                    videoFile: "https://drive.google.com/file/d/1fx9WC6uUM6rYfchtE7UKmLvY7uNmTkEr/view?usp=sharing"
+                },
+                {
+                    id: "VID003",
+                    label: "OTPL મશીન માંથી ટિકિટ કાઢવા માટે  REPORT",
+                    videoFile: "https://drive.google.com/file/d/1TotQPw1TxPg1glntjWbMiiGjKz_0TKU0/view?usp=sharing"
+                },
+                {
+                    id: "VID004",
+                    label: "OTPL રિટર્ન ટ્રીપ શિલેક્ટ કરવા માટે",
+                    videoFile: "https://drive.google.com/file/d/1lIcYgmeFyPoF_wSmJDPSFwQc_EqSGSze/view?usp=sharing"
+                },
+                {
+                    id: "VID005",
+                    label: "યુપીઆઈ પેમેન્ટ કેવીરીતે કરશો",
+                    videoFile: "https://drive.google.com/file/d/1_M0eM1Zrk-vbge5NvKG-nHKugIIFTRkJ/view?usp=sharing"
+                },
+                {
+                    id: "VID006",
+                    label: "યુપિઆઇ પેમેન્ટ",
+                    videoFile: "https://drive.google.com/file/d/1-EF6tSbFdVQYWlNMshQcV_DhdABlE_u5/view?usp=sharing"
+                
+                },
+                {
+                    id: "VID007",
+                    label: "UPI PAYMANT    TIME BY WENT",
+                    videoFile: "https://drive.google.com/file/d/1-pIviTzj5UExfPuE2czUScxaQ_nEjZbj/view?usp=sharing"
+                }
+            ];
+            
+            // असली डेटा के लिए इस लाइन का उपयोग करें:
+            // const videos = await fetchDataFromGoogleSheets();
+            
+            // डेमो के लिए:
+            const videos = demoVideos;
+            
+            displayVideos(videos);
+            setupSearch(videos);
+        });
+    </script>
+</body>
+</html>
